@@ -1,7 +1,7 @@
 <html>
 <head>
 <meta charset="utf-8"/>
-<title>Rubic's Cube visualization</title>
+<title>Rubik's Cube visualization</title>
 
 <script type="text/javascript" src="main.js"></script>
 
@@ -12,11 +12,14 @@
 	}
 </script>
 <script id="vertex shader" type="x-shader/x-vertex">
-	attribute vec3 aVertexPosition;
-	uniform mat4 uMVMatrix;
-	uniform mat4 uPMatrix;
+	/*attribute vec3 aVertexPosition;*/
+	attribute vec4 aVertexPosition;
+	/*uniform mat4 uMVMatrix;*/
+	/*uniform mat4 uPMatrix;*/
 	void main(void) {
-		gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+		/*gl_Position = uPMatrix * uMVMatrix *
+			vec4(aVertexPosition, 1.0);*/
+		gl_Position = aVertexPosition;
 	}
 </script>
 </head>
