@@ -4,6 +4,8 @@
 var canvas;
 var gl = null; // the webgl context
 var vertexBuffer; // gl-buffer for vertices of one primitive
+var vertPosAttributeLocation; // used to identify the vertex position attribut
+	// in the vertex shader and to bind vertex array data to this attribute
 
 
 function onLoad() {
@@ -39,6 +41,9 @@ function onLoad() {
 		return null;
 	}
 	gl.useProgram(shaderProgram);
+	vertPosAttributeLocation = gl.getAttribLocation(shaderProgram,
+		"aVertexPosition");
+	gl.enableVertexAttribArray(vertPosAttributeLocation);
 	
 	alert("ok");
 	initVertexBuffers();
@@ -51,9 +56,9 @@ function initVertexBuffers() {
 	vertexBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 	var vertices =
-		[2.0, 2.0, 0.0
-		,1.0, -1.0, 0.0
-		,-1.0, 1.0, 0.0
+		[1.0, 1.0, 0.0
+		,0.5, -0.5, 0.0
+		,-0.5, 0.5, 0.0
 		];
 	gl.bufferData(gl.ARRAY_BUFFER,
 			new Float32Array(vertices),
@@ -64,5 +69,10 @@ function render() {
 	if (!gl) return;
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+	gl.vertexAttribPointer(vertPosAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+	gl.drawArrays(gl.TRIANGLES, 0, 3);
+
 	alert("rendered.");
 }
