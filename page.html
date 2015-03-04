@@ -3,6 +3,7 @@
 <meta charset="utf-8"/>
 <title>Rubik's Cube visualization</title>
 
+<script type="text/javascript" src="gl-matrix-min.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
 <!-- shader programs -->
@@ -12,14 +13,12 @@
 	}
 </script>
 <script id="vertex shader" type="x-shader/x-vertex">
-	/*attribute vec3 aVertexPosition;*/
 	attribute vec3 aVertexPosition;
-	/*uniform mat4 uMVMatrix;*/
-	/*uniform mat4 uPMatrix;*/
+	uniform mat4 uMVMatrix;
+	uniform mat4 uPMatrix;
 	void main(void) {
-		/*gl_Position = uPMatrix * uMVMatrix *
-			vec4(aVertexPosition, 1.0);*/
-		gl_Position = vec4(aVertexPosition, 1.0);
+		gl_Position = uPMatrix * uMVMatrix *
+			vec4(aVertexPosition, 1.0);
 	}
 </script>
 </head>
