@@ -25,7 +25,7 @@ function initVertexBuffers() {
 	if (!gl) return;
 	// useful units for a cube piece
 	var o = pieceSize/2;
-	var i = o*0.8;
+	var i = o*0.85;
 	// piece edge
 	vertexBuffers.pieceEdge = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffers.pieceEdge);

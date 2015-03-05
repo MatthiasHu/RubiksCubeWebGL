@@ -17,7 +17,7 @@ var pMatrix; // the projection matrix
 
 
 
-var thePiece;
+var theCube;
 
 
 
@@ -79,7 +79,9 @@ function onLoad() {
 	gl.uniformMatrix4fv(shaderLocations.uPMatrix, false, pMatrix);
 
 
-	thePiece = new Piece();
+	// setup the virtual cube
+	theCube = new Cube();
+	theCube.reset();
 
 	render();
 }
@@ -95,11 +97,12 @@ function render() {
 	// setup modelview matrix
 	var mvMatrix = mat4.create(); // identity matrix
 	mat4.identity(mvMatrix);
-	mat4.translate(mvMatrix, mvMatrix, vec3.fromValues(0, 0, -5));
+	mat4.translate(mvMatrix, mvMatrix, vec3.fromValues(0, 0, -10));
 	mat4.rotateX(mvMatrix, mvMatrix, Math.PI/2*0.2);
 	mat4.rotateY(mvMatrix, mvMatrix, Math.PI/2*0.2);
 
-	renderPiece(mvMatrix, thePiece);
+	theCube.render(mvMatrix);
+	theCube.render(mvMatrix);
 }
 
 
