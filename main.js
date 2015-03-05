@@ -15,12 +15,70 @@ shaderLocations.uMVMatrix = null; // model view matrix uniform
 var pMatrix; // the projection matrix
 var pieceSize = 1.0; // can be used to scale the whole cube
 
+// symbolic constants for indices of the x, y and z axis
+var AXIS_X = 0, AXIS_Y = 1, AXIS_Z = 2; 
+var AXES = [AXIS_X, AXIS_Y, AXIS_Z];
+// a direction is an axis with a sign
+var DIRECTIONS = [];
+for (var axis of AXES) {
+	for (var sign of [-1, 1]) {
+		DIRECTIONS.push({axis:axis, sign:sign});
+	}
+}
+
+// colors to appear at piece faces
+var GAMECOLORS =
+	[{name:"red"   , red:0.90, green:0.00, blue:0.30}
+	,{name:"green" , red:0.10, green:0.80, blue:0.20}
+	,{name:"blue"  , red:0.00, green:0.20, blue:0.90}
+	,{name:"white" , red:0.90, green:0.90, blue:0.90}
+	,{name:"yellow", red:0.90, green:0.85, blue:0.20}
+	,{name:"orange", red:0.99, green:0.60, blue:0.00}
+	];
+// color to apper at piece faces, where no game color is set
+var UNDEFINEDGAMECOLOR = [0.4, 0.4, 0.4, 1.0];
+
+
+// the cube piece class
+function Piece() {
+	this.faceColors=[];
+	for (var axis of AXES) {
+		this.faceColors[axis] = [];
+		for (var sign of [-1, 1]) {
+			this.faceColors[axis][sign] = -1;
+		}
+	}
+}
+Piece.prototype.getFaceColor = function(direction) {
+	return this.faceColors[direction.axis][direction.sign];
+}
+Piece.prototype.setFaceColor = function(direction, index) {
+	this.faceColors[direction.axis][direction.sign] = index;
+}
+Piece.prototype.rotate = function(rotAxis, rotSign) {
+	var result = new Piece();
+	for (var dir of DIRECTIONS) {
+		var otherFace =	rotateDirection(
+				faceAcis, faceSign,
+				rotAxis, rotSign);
+		result.setFaceColor(rotateDirection(dir, rotAxis, rotSign),
+			this.getFaceColor(dir));
+	}
+}
+
+
+var thePiece = new Piece();
+for (var i=0; i<6; i++) {
+	thePiece.setFaceColor(DIRECTIONS[i], i);
+}
+
+
 
 function onLoad() {
 	var div = document.getElementById("randomdiv");
-	div.innerHTML = "sooooo much randomness";
-	for (var str of ["abc", "def", "hust"]) {
-		div.innerHTML += " "+str;
+	div.innerHTML = "some output:";
+	for (var dir of DIRECTIONS) {
+		div.innerHTML += " " + thePiece.getFaceColor(dir);
 	}
 
 	canvas = document.getElementById("webgl canvas");
@@ -82,11 +140,12 @@ function onLoad() {
 
 function initVertexBuffers() {
 	if (!gl) return;
+	// useful units for a cube piece
+	var o = pieceSize/2;
+	var i = o*0.8;
 	// piece edge
 	vertexBuffers.pieceEdge = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffers.pieceEdge);
-	var o = pieceSize/2;
-	var i = o*0.8;
 	var pieceEdgeVertices =
 		[i, o, -i
 		,o, i, -i
@@ -107,6 +166,18 @@ function initVertexBuffers() {
 	gl.bufferData(gl.ARRAY_BUFFER,
 			new Float32Array(pieceCornerVertices),
 			gl.STATIC_DRAW);
+	// piece face
+	vertexBuffers.pieceFace = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffers.pieceFace);
+	var pieceFaceVertices =
+		[i, i, o
+		,-i, i, o
+		,i, -i, o
+		,-i, -i, o
+		];
+	gl.bufferData(gl.ARRAY_BUFFER,
+			new Float32Array(pieceFaceVertices),
+			gl.STATIC_DRAW);
 }
 
 function render() {
@@ -119,21 +190,78 @@ function render() {
 	var mvMatrix = mat4.create(); // identity matrix
 	mat4.identity(mvMatrix);
 	mat4.translate(mvMatrix, mvMatrix, vec3.fromValues(0, 0, -5));
-	mat4.rotateY(mvMatrix, mvMatrix, 0.20);
+	mat4.rotateX(mvMatrix, mvMatrix, Math.PI/2*0.2);
+	mat4.rotateY(mvMatrix, mvMatrix, Math.PI/2*0.2);
 
-	renderPieceFrame(mvMatrix);
+	renderPiece(mvMatrix, thePiece);
 }
 
+// set current rendering color by RGB components
 function setColor(r, g, b) {
 	gl.vertexAttrib4fv(shaderLocations.aVertexColor,
 		[r, g, b, 1.0]);
 }
+// set current rendering color by an index to the GAMECOLOR table
+function setColorByIndex(i) {
+	if (GAMECOLORS[i]) {
+		gl.vertexAttrib4fv(shaderLocations.aVertexColor,
+			[GAMECOLORS[i].red
+			,GAMECOLORS[i].green
+			,GAMECOLORS[i].blue
+			,1.0]);
+	}
+	else {
+		gl.vertexAttrib4fv(shaderLocations.aVertexColor,
+			UNDEFINEDGAMECOLOR);
+	}
+}
 
-// rendering various parts of a piece
+// render a cube piece (with given face colors)
+function renderPiece(mvMatrix, piece) {
+	renderPieceFrame(mvMatrix);
+	for (var dir of DIRECTIONS) {
+		setColorByIndex(piece.getFaceColor(dir));
+		renderPieceFace(mvMatrix, dir);
+	}
+}
+// rendering various parts of a cube piece
+function renderPieceFace(mvMatrix, direction) {
+	var newMVMatrix;
+	switch (direction.axis) {
+		case AXIS_X:
+			newMVMatrix = matRotateY(mvMatrix, Math.PI/2);
+			break;
+		case AXIS_Y:
+			newMVMatrix = matRotateX(mvMatrix, -Math.PI/2);
+			break;
+		case AXIS_Z:
+			newMVMatrix = mat4.clone(mvMatrix);
+			break;
+		default:
+			throw new Error("not an axis index: "+direction.axis);
+	}
+	var test = false;
+	if (direction.sign==-1) {
+		mat4.scale(newMVMatrix, newMVMatrix, vec3.fromValues(-1, -1, -1));
+		test = true;
+	}
+	//alert("render face (axes:"+direction.axis+",sign:"+direction.sign+"), flipped:"+test);
+	renderFrontPieceFace(newMVMatrix);
+	//alert("(rendered.)");
+}
+function renderFrontPieceFace(mvMatrix) {
+	// pass modelview matrix
+	gl.uniformMatrix4fv(shaderLocations.uMVMatrix, false, mvMatrix);
+	// render verticies from vertexBuffer
+	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffers.pieceFace);
+	gl.vertexAttribPointer(shaderLocations.aVertexPosition,
+		3, gl.FLOAT, false, 0, 0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
 function renderPieceFrame(mvMatrix) {
-	setColor(0.5, 0.5, 0.5);
+	setColor(0.60, 0.60, 0.60);
 	renderPieceEdges(mvMatrix);
-	setColor(0.4, 0.4, 0.4);
+	setColor(0.70, 0.70, 0.70);
 	renderPieceCorners(mvMatrix);
 }
 function renderPieceEdges(mvMatrix) {
