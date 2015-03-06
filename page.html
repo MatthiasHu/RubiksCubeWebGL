@@ -34,8 +34,44 @@
 <body onload="onLoad();">
 <canvas id="webgl canvas" width=512 height=512 style="border: 1px solid black;">
 </canvas>
-<div id="randomdiv" style="background: #fff0d0">
-initial div text
+<div id="controls div">
+Controls:<br/>
+rotating the cube:<br/>
+<table border="0">
+<tr>
+<td/><td><input type="button" value="rotate up" onclick="onRotateCube('up');"/></td><td/>
+</tr>
+<tr>
+<td><input type="button" value="rotate left" onclick="onRotateCube('left');"/></td><td/>
+<td><input type="button" value="rotate right" onclick="onRotateCube('right');"/></td>
+</tr>
+<tr>
+<td/><td><input type="button" value="rotate down" onclick="onRotateCube('down');"/></td><td/>
+</tr>
+</table>
+rotating planes:<br/>
+<table>
+<tr>
+<td/><td><input type="button" value="<--" onClick="onRotatePlane('top plane left');"/></td>
+<td><input type="button" value="-->" onClick="onRotatePlane('top plane right');"/></td><td/>
+</tr>
+<tr>
+<td><input type="button" value="^" onclick="onRotatePlane('left plane up');"/></td><td/>
+<td/><td><input type="button" value="^" onclick="onRotatePlane('right plane up');"/></td>
+</tr>
+<tr>
+<td/><td><input type="button" value="L>" onClick="onRotatePlane('front plane counter-clockwise');"/></td>
+<td><input type="button" value="<J" onClick="onRotatePlane('front plane clockwise');"/></td><td/>
+</tr>
+<tr>
+<td><input type="button" value="v" onclick="onRotatePlane('left plane down');"/></td><td/>
+<td/><td><input type="button" value="v" onclick="onRotatePlane('right plane down');"/></td>
+</tr>
+<tr>
+<td/><td><input type="button" value="<--" onClick="onRotatePlane('bottom plane left');"/></td>
+<td><input type="button" value="-->" onClick="onRotatePlane('bottom plane right');"/></td><td/>
+</tr>
+</table>
 </div>
 </body>
 </html>

@@ -22,9 +22,7 @@ var theCube;
 
 
 function onLoad() {
-	var div = document.getElementById("randomdiv");
-	div.innerHTML = "some output:";
-
+	// find canvas to render in
 	canvas = document.getElementById("webgl canvas");
 
 	// try to initialize webgl
@@ -66,11 +64,10 @@ function onLoad() {
 	shaderLocations.uMVMatrix =
 		gl.getUniformLocation(shaderProgram, "uMVMatrix");
 	
-	// enable depth testing
+
 	gl.enable(gl.DEPTH_TEST);
 	
 	initVertexBuffers();
-
 
 	// setup projection matrix
 	pMatrix = mat4.create();
@@ -99,10 +96,67 @@ function render() {
 	mat4.identity(mvMatrix);
 	mat4.translate(mvMatrix, mvMatrix, vec3.fromValues(0, 0, -10));
 	mat4.rotateX(mvMatrix, mvMatrix, Math.PI/2*0.2);
-	mat4.rotateY(mvMatrix, mvMatrix, Math.PI/2*0.2);
+	mat4.rotateY(mvMatrix, mvMatrix, -Math.PI/2*0.2);
 
 	theCube.render(mvMatrix);
 	theCube.render(mvMatrix);
 }
 
 
+// user input handling
+function onRotateCube(strDir) {
+	var axis, sign;
+	switch (strDir) {
+		case "left":
+			theCube = theCube.rotate(AXIS_Y, -1);
+			break;
+		case "right":
+			theCube = theCube.rotate(AXIS_Y, 1);
+			break;
+		case "up":
+			theCube = theCube.rotate(AXIS_X, -1);
+			break;
+		case "down":
+			theCube = theCube.rotate(AXIS_X, 1);
+			break;
+		default:
+			alert("unknown cube rotation string: "+strDir);
+			return;
+	}
+	render();
+}
+function onRotatePlane(strAction) {
+	switch (strAction) {
+		case "left plane up":
+			theCube = theCube.rotatePlane(AXIS_X, -1, -1);
+			break;
+		case "left plane down":
+			theCube = theCube.rotatePlane(AXIS_X, -1, 1);
+			break;
+		case "right plane up":
+			theCube = theCube.rotatePlane(AXIS_X, 1, -1);
+			break;
+		case "right plane down":
+			theCube = theCube.rotatePlane(AXIS_X, 1, 1);
+			break;
+		case "top plane left":
+			theCube = theCube.rotatePlane(AXIS_Y, 1, -1);
+			break;
+		case "top plane right":
+			theCube = theCube.rotatePlane(AXIS_Y, 1, 1);
+			break;
+		case "bottom plane left":
+			theCube = theCube.rotatePlane(AXIS_Y, -1, -1);
+			break;
+		case "bottom plane right":
+			theCube = theCube.rotatePlane(AXIS_Y, -1, 1);
+			break;
+		case "front plane clockwise":
+			theCube = theCube.rotatePlane(AXIS_Z, 1, -1);
+			break;
+		case "front plane counter-clockwise":
+			theCube = theCube.rotatePlane(AXIS_Z, 1, 1);
+			break;
+	}
+	render();
+}

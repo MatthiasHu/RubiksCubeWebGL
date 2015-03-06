@@ -18,7 +18,7 @@ function nextAxis(axis) {
 		case AXIS_X: return AXIS_Y;
 		case AXIS_Y: return AXIS_Z;
 		case AXIS_Z: return AXIS_X;
-		default: throw new Error("no axis index: "+axis);
+		default: throw new Error("not an axis index: "+axis);
 	}
 }
 function afterNextAxis(axis) {
@@ -26,7 +26,16 @@ function afterNextAxis(axis) {
 		case AXIS_X: return AXIS_Z;
 		case AXIS_Y: return AXIS_X;
 		case AXIS_Z: return AXIS_Y;
-		default: throw new Error("no axis index: "+axis);
+		default: throw new Error("not an axis index: "+axis);
+	}
+}
+// turn an axis index into the corresponding attribute name string
+function axisToString(axis) {
+	switch (axis) {
+		case AXIS_X: return "x";
+		case AXIS_Y: return "y";
+		case AXIS_Z: return "z";
+		default: throw new Error("not an axis index: "+axis);
 	}
 }
 
@@ -39,6 +48,17 @@ function rotateDirection(dir, rotAxis, rotSign) {
 		return {axis:nextAxis(rotAxis), sign:(-rotSign*dir.sign)};
 	}
 	return dir;
+}
+
+// rotating a position (integral vector) 90 degrees around an axis
+function rotatePosition(pos, rotAxis, rotSign) {
+	// whitch directions are rotated to the positive x/y/z axis
+	var xPreimage = rotateDirection({axis:AXIS_X, sign:1}, rotAxis, -rotSign);
+	var yPreimage = rotateDirection({axis:AXIS_Y, sign:1}, rotAxis, -rotSign);
+	var zPreimage = rotateDirection({axis:AXIS_Z, sign:1}, rotAxis, -rotSign);
+	return {x:pos[axisToString(xPreimage.axis)]*xPreimage.sign,
+		y:pos[axisToString(yPreimage.axis)]*yPreimage.sign,
+		z:pos[axisToString(zPreimage.axis)]*zPreimage.sign};
 }
 
 
@@ -68,6 +88,13 @@ Piece.prototype.rotate = function(rotAxis, rotSign) {
 	}
 	return result;
 }
+Piece.prototype.clone = function() {
+	var result = new Piece();
+	for (var dir of DIRECTIONS) {
+		result.setFaceColor(dir, this.getFaceColor(dir));
+	}
+	return result;
+}
 
 
 // --------------
@@ -85,6 +112,16 @@ function Cube() {
 		}
 	}
 }
+// list of all piece positions in a cube
+var ALLPOSITIONS = [];
+for (var x=-1; x<=1; x++) {
+	for (var y=-1; y<=1; y++) {
+		for (var z=-1; z<=1; z++) {
+			ALLPOSITIONS.push({x:x, y:y, z:z});
+		}
+	}
+}
+// getter and setter for the pieces
 Cube.prototype.getPiece = function(pos) {
 	return this.pieces[pos.x][pos.y][pos.z];
 }
@@ -112,25 +149,42 @@ Cube.prototype.reset = function() {
 		var dir = DIRECTIONS[i];
 		// iterate over the nine pieces with faces in this direction
 		for (var pos of this.plane(dir.axis, dir.sign)) {
-			var piece = this.getPiece(pos);
-			piece.setFaceColor(dir, i);
-			this.setPiece(pos, piece);
+			this.getPiece(pos).setFaceColor(dir, i);
 		}
 	}
+}
+// rotate the whole cube
+Cube.prototype.rotate = function(rotAxis, rotSign) {
+	var result = new Cube();
+	for (var pos of ALLPOSITIONS) {
+		result.setPiece(rotatePosition(pos, rotAxis, rotSign),
+			this.getPiece(pos).rotate(rotAxis, rotSign));
+	}
+	return result;
+}
+// rotate a plane
+Cube.prototype.rotatePlane = function(axis, index, rotSign) {
+	var result = new Cube();
+	for (var pos of ALLPOSITIONS) {
+		if (pos[axisToString(axis)]==index) {
+			result.setPiece(pos, this.getPiece(
+				rotatePosition(pos, axis, -rotSign)
+				).rotate(axis, rotSign));
+		}
+		else {
+			result.setPiece(pos, this.getPiece(pos).clone());
+		}
+	}
+	return result;	
 }
 // render the whole cube
 Cube.prototype.render = function(mvMatrix) {
 	var pieceInterval = pieceSize*1.02;
-	for (var x=-1; x<=1; x++) {
-		for (var y=-1; y<=1; y++) {
-			for (var z=-1; z<=1; z++) {
-				renderPiece(matTranslate(mvMatrix,
-						x*pieceInterval,
-						y*pieceInterval,
-						z*pieceInterval),
-					this.pieces[x][y][z]);
-			}
-		}
+	for (var pos of ALLPOSITIONS) {
+		renderPiece(matTranslate(mvMatrix,
+			pos.x*pieceInterval,
+			pos.y*pieceInterval,
+			pos.z*pieceInterval),
+		this.getPiece(pos));
 	}
-	
 }
