@@ -6,22 +6,29 @@ var animationRunning = null; // null, when no animation is active,
 
 var perspectiveAnimation = null;
 var cubeRotationAnimation = null;
+var planeRotationAnimation = null;
 
 
 
 // draw one animation frame
 // and break the loop if all animations are done
 function animationTick() {
+	// delete finished animations
 	if (cubeRotationAnimation && cubeRotationAnimation.done()) {
 		cubeRotationAnimation = null;
 	}
 	if (perspectiveAnimation && perspectiveAnimation.done()) {
 		perspectiveAnimation = null;
 	}
-	if (!cubeRotationAnimation && !perspectiveAnimation) {
+	if (planeRotationAnimation && planeRotationAnimation.done()) {
+		planeRotationAnimation = null;
+	}
+	// break loop, if no animation is running any more
+	if (!cubeRotationAnimation && !perspectiveAnimation && !planeRotationAnimation) {
 		clearInterval(animationRunning);
 		animationRunning = null;
 	}
+	// render the frame
 	render();
 }
 

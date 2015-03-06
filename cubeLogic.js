@@ -179,12 +179,22 @@ Cube.prototype.rotatePlane = function(axis, index, rotSign) {
 }
 // render the whole cube
 Cube.prototype.render = function(mvMatrix) {
-	var pieceInterval = pieceSize*1.02;
 	for (var pos of ALLPOSITIONS) {
-		renderPiece(matTranslate(mvMatrix,
-			pos.x*pieceInterval,
-			pos.y*pieceInterval,
-			pos.z*pieceInterval),
-		this.getPiece(pos));
+		this.renderPieceAt(mvMatrix, pos);
 	}
+}
+// render one plane (9x9 pieces)
+Cube.prototype.renderPlane = function(mvMatrix, axis, index) {
+	for (var pos of this.plane(axis, index)) {
+		this.renderPieceAt(mvMatrix, pos);
+	}
+}
+// render a piece at its correct position relative to the center of the cube
+Cube.prototype.renderPieceAt = function(mvMatrix, pos) {
+	var pieceInterval = pieceSize*1.02;
+	renderPiece(matTranslate(mvMatrix,
+		pos.x*pieceInterval,
+		pos.y*pieceInterval,
+		pos.z*pieceInterval),
+	this.getPiece(pos));
 }

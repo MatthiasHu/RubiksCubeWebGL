@@ -115,13 +115,30 @@ function render() {
 	// possibly apply cube rotation animation
 	var crAnim = cubeRotationAnimation;
 	if (crAnim) {
-		//alert(crAnim.rotSign+", "+crAnim.getValue());
-		mvMatrix = crAnim.matrixRotation(mvMatrix,
+		var matrixRotation = axisToMatrixRotation(crAnim.axis);
+		mvMatrix = matrixRotation(mvMatrix,
 				- Math.PI/2 * crAnim.rotSign
 				* crAnim.getValue());
 	}
 
-	theCube.render(mvMatrix);
+	// render the cube, apply plane rotation animation if needed
+	var prAnim = planeRotationAnimation;
+	if (prAnim) {
+		// render unrotated planes
+		for (var planeIndex of [-1, 0, 1]) {
+			if (planeIndex!=prAnim.index) {
+				theCube.renderPlane(mvMatrix, prAnim.axis, planeIndex);
+			}
+		}
+		// render rotated plane
+		var matrixRotation = axisToMatrixRotation(prAnim.axis);
+		theCube.renderPlane(
+			matrixRotation(mvMatrix, -prAnim.rotSign*Math.PI/2*prAnim.getValue()),
+			prAnim.axis, prAnim.index);
+	}
+	else {
+		theCube.render(mvMatrix);
+	}
 }
 
 
@@ -178,50 +195,73 @@ function rotateCube(axis, sign) {
 	theCube=theCube.rotate(axis, sign);
 	// prepare the animation
 	var anim = new Animation(300);
-	anim.matrixRotation = axisToMatrixRotation(axis);
+	anim.axis = axis;
 	anim.rotSign = sign;
 	// set and start animation if necessary
 	cubeRotationAnimation = anim;
 	assureAnimationRunning();
 }
 function onRotatePlane(strAction) {
+	var axis, index, rotSign;
 	switch (strAction) {
 		case "left plane up":
-			theCube = theCube.rotatePlane(AXIS_X, -1, -1);
+			axis = AXIS_X;
+			index = -1; rotSign = -1;
 			break;
 		case "left plane down":
-			theCube = theCube.rotatePlane(AXIS_X, -1, 1);
+			axis = AXIS_X;
+			index = -1; rotSign = 1;
 			break;
 		case "right plane up":
-			theCube = theCube.rotatePlane(AXIS_X, 1, -1);
+			axis = AXIS_X;
+			index = 1; rotSign = -1;
 			break;
 		case "right plane down":
-			theCube = theCube.rotatePlane(AXIS_X, 1, 1);
+			axis = AXIS_X;
+			index = 1; rotSign = 1;
 			break;
 		case "top plane left":
-			theCube = theCube.rotatePlane(AXIS_Y, 1, -1);
+			axis = AXIS_Y;
+			index = 1; rotSign = -1;
 			break;
 		case "top plane right":
-			theCube = theCube.rotatePlane(AXIS_Y, 1, 1);
+			axis = AXIS_Y;
+			index = 1; rotSign = 1;
 			break;
 		case "bottom plane left":
-			theCube = theCube.rotatePlane(AXIS_Y, -1, -1);
+			axis = AXIS_Y;
+			index = -1; rotSign = -1;
 			break;
 		case "bottom plane right":
-			theCube = theCube.rotatePlane(AXIS_Y, -1, 1);
+			axis = AXIS_Y;
+			index = -1; rotSign = 1;
 			break;
 		case "front plane clockwise":
-			theCube = theCube.rotatePlane(AXIS_Z, 1, -1);
+			axis = AXIS_Z;
+			index = 1; rotSign = -1;
 			break;
 		case "front plane counter-clockwise":
-			theCube = theCube.rotatePlane(AXIS_Z, 1, 1);
+			axis = AXIS_Z;
+			index = 1; rotSign = 1;
 			break;
 	}
-	render();
+	rotateCubePlane(axis, index, rotSign);
+}
+function rotateCubePlane(axis, index, rotSign) {
+	// actually rotate the plane
+	theCube=theCube.rotatePlane(axis, index, rotSign);
+	// prepare the animation
+	var anim = new Animation(300);
+	anim.axis = axis;
+	anim.index = index;
+	anim.rotSign = rotSign;
+	// set and start animation if necessary
+	planeRotationAnimation = anim;
+	assureAnimationRunning();
 }
 
-// helper function for the onRotate* functions;
-// turns an symbolic axis index into the corresponding
+// helper function for the render() function,
+// turns a symbolic axis index into the corresponding
 // matrix rotation function
 function axisToMatrixRotation(axis) {
 	switch (axis) {
