@@ -3,10 +3,15 @@
 // note: mat4.* (and vec3.*) are calls to the glMatrix library
 
 
+var vertexBuffers = {}; // will hold gl-buffers for vertices
+			// of one primitive as attributes
+
+
+
 // colors to appear at piece faces
 var GAMECOLORS =
-	[{name:"red"   , red:0.90, green:0.00, blue:0.30}
-	,{name:"orange", red:0.99, green:0.60, blue:0.00}
+	[{name:"orange", red:0.99, green:0.60, blue:0.00}
+	,{name:"red"   , red:0.90, green:0.00, blue:0.30}
 	,{name:"green" , red:0.10, green:0.80, blue:0.20}
 	,{name:"blue"  , red:0.00, green:0.20, blue:0.90}
 	,{name:"white" , red:0.90, green:0.90, blue:0.90}
