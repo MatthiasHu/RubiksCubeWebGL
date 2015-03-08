@@ -76,6 +76,10 @@ function onLoad() {
 	gl.uniformMatrix4fv(shaderLocations.uPMatrix, false, pMatrix);
 
 
+	// listen for keyboard input
+	addEventListener("keydown", function(event) {onKeyDown(event);});
+
+
 	// setup the virtual cube
 	theCube = new Cube();
 	theCube.reset();
@@ -145,6 +149,29 @@ function render() {
 
 // user input handling
 // -------------------
+var keybindings =
+	{37/*left arrow*/:{func:onRotateCube, arg:"left"}
+	,38/*up arrow*/:{func:onRotateCube, arg:"up"}
+	,39/*right arrow*/:{func:onRotateCube, arg:"right"}
+	,40/*down arrow*/:{func:onRotateCube, arg:"down"}
+	,81/*Q*/:{func:onRotatePlane, arg:"left plane up"}
+	,87/*W*/:{func:onRotatePlane, arg:"top plane left"}
+	,69/*E*/:{func:onRotatePlane, arg:"top plane right"}
+	,82/*R*/:{func:onRotatePlane, arg:"right plane up"}
+	,83/*S*/:{func:onRotatePlane, arg:"front plane counter-clockwise"}
+	,68/*D*/:{func:onRotatePlane, arg:"front plane clockwise"}
+	,89/*Y*/:{func:onRotatePlane, arg:"left plane down"}
+	,90/*Z*/:{func:onRotatePlane, arg:"left plane down"}
+	,88/*X*/:{func:onRotatePlane, arg:"bottom plane left"}
+	,67/*c*/:{func:onRotatePlane, arg:"bottom plane right"}
+	,86/*V*/:{func:onRotatePlane, arg:"right plane down"}
+	}
+function onKeyDown(event) {
+	var action = keybindings[event.keyCode];
+	if (action) {
+		action.func(action.arg);
+	}
+}
 function onRotateCube(strDir) {
 	var axis, sign;
 	switch (strDir) {
