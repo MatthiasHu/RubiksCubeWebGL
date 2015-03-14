@@ -169,6 +169,7 @@ var keybindings =
 function onKeyDown(event) {
 	var action = keybindings[event.keyCode];
 	if (action) {
+		event.preventDefault();
 		action.func(action.arg);
 	}
 }
