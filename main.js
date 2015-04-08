@@ -221,6 +221,22 @@ function flipPerspective(axis) {
 function rotateCube(axis, sign) {
 	// actually rotate the virtual cube
 	theCube=theCube.rotate(axis, sign);
+	// also rotate the plane rotation animation if running
+	var prAnim = planeRotationAnimation;
+	if (prAnim) {
+		// rotate the plane identifier
+		var plane = {axis:prAnim.axis
+		            ,sign:prAnim.index}
+		plane = rotateDirection(plane, axis, sign);
+		// rotate the rotation sign
+		var rotDir = {axis:prAnim.axis
+		             ,sign:prAnim.rotSign}
+		rotDir = rotateDirection(rotDir, axis, sign);
+		// update plane rotation animation
+		prAnim.axis = plane.axis;
+		prAnim.index = plane.sign;
+		prAnim.rotSign = rotDir.sign;
+	}
 	// prepare the animation
 	var anim = new Animation(300);
 	anim.axis = axis;
