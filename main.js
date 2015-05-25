@@ -83,8 +83,6 @@ function onLoad() {
 	// setup the virtual cube
 	theCube = new Cube();
 	theCube.reset();
-	for (var i=0; i<21*60; i++)
-		theCube = theCube.rotatePlane(AXIS_X, 1, -1).rotate(AXIS_Y, -1);
 
 
 	render();
