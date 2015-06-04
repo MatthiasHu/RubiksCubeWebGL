@@ -14,6 +14,7 @@ var pMatrix; // the projection matrix
 var perspective = {}; // direction of slant
 perspective.x = 1; // initially look at the top
 perspective.y = -1; // and right of the cube
+var invertedPerspective = false; // use crazy inverted Perspective?
 var SLANT = Math.PI*0.1; // extent of slant in rad
 
 // the virtual cube
@@ -66,6 +67,7 @@ function onLoad() {
 	
 
 	gl.enable(gl.DEPTH_TEST);
+	setInvertedPerspective(false);
 	
 	initVertexBuffers();
 
@@ -101,17 +103,25 @@ function render() {
 	var mvMatrix = mat4.create(); // identity matrix
 	mat4.identity(mvMatrix);
 	mat4.translate(mvMatrix, mvMatrix, vec3.fromValues(0, 0, -10));
-	//apply perspective slant and possibly apply perspective animation
-	var pAnim = perspectiveAnimation;
-	mat4.rotateX(mvMatrix, mvMatrix, perspective.x*SLANT);
-	if (pAnim && pAnim.axis==AXIS_X) {
-		mat4.rotateX(mvMatrix, mvMatrix,
-				-pAnim.rotSign*pAnim.getValue()*2*SLANT);
+	if (!invertedPerspective) {
+		//apply perspective slant and possibly apply perspective animation
+		var pAnim = perspectiveAnimation;
+		mat4.rotateX(mvMatrix, mvMatrix, perspective.x*SLANT);
+		if (pAnim && pAnim.axis==AXIS_X) {
+			mat4.rotateX(mvMatrix, mvMatrix,
+					-pAnim.rotSign*pAnim.getValue()*2*SLANT);
+		}
+		mat4.rotateY(mvMatrix, mvMatrix, perspective.y*SLANT);
+		if (pAnim && pAnim.axis==AXIS_Y) {
+			mat4.rotateY(mvMatrix, mvMatrix,
+					-pAnim.rotSign*pAnim.getValue()*2*SLANT);
+		}
 	}
-	mat4.rotateY(mvMatrix, mvMatrix, perspective.y*SLANT);
-	if (pAnim && pAnim.axis==AXIS_Y) {
-		mat4.rotateY(mvMatrix, mvMatrix,
-				-pAnim.rotSign*pAnim.getValue()*2*SLANT);
+	else {
+		// use crazy inverted perspective
+		// by flipping z coordinates
+		mat4.scale(mvMatrix, mvMatrix, vec3.fromValues(1, 1, -1));
+		// (no perspective slant in inverted perspective mode)
 	}
 
 	// possibly apply cube rotation animation
@@ -144,6 +154,19 @@ function render() {
 }
 
 
+function setInvertedPerspective(on) {
+	if (on) {
+		invertedPerspective = true;
+		gl.depthFunc(gl.GREATER);
+		gl.clearDepth(0);
+	}
+	else {
+		invertedPerspective = false;
+		gl.depthFunc(gl.LESS);
+		gl.clearDepth(1e10);
+	}
+}
+
 
 // user input handling
 // -------------------
@@ -163,13 +186,21 @@ var keybindings =
 	,88/*X*/:{func:onRotatePlane, arg:"bottom plane left"}
 	,67/*c*/:{func:onRotatePlane, arg:"bottom plane right"}
 	,86/*V*/:{func:onRotatePlane, arg:"right plane down"}
+	,80/*P*/:{func:onToggleInvertedPerspective}
 	}
 function onKeyDown(event) {
 	var action = keybindings[event.keyCode];
 	if (action) {
 		event.preventDefault();
-		action.func(action.arg);
+		if ("arg" in action)
+			action.func(action.arg);
+		else
+			action.func();
 	}
+}
+function onToggleInvertedPerspective() {
+	setInvertedPerspective(!invertedPerspective);
+	render();
 }
 function onRotateCube(strDir) {
 	var axis, sign;
@@ -194,11 +225,17 @@ function onRotateCube(strDir) {
 			alert("unknown cube rotation string: "+strDir);
 			return;
 	}
-	if (perspective[axisToString(axis)] != sign) {
-		flipPerspective(axis);
+	if (!invertedPerspective) {
+		if (perspective[axisToString(axis)] != sign) {
+			flipPerspective(axis);
+		}
+		else {
+			flipPerspective(axis);
+			rotateCube(axis, sign);
+		}
 	}
 	else {
-		flipPerspective(axis);
+		// no perspecive animations in inverted perspective mode
 		rotateCube(axis, sign);
 	}
 }

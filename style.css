@@ -1,0 +1,16 @@
+.controls_section_div {
+	display: inline-block;
+	overflow: hidden;
+	margin-top: 1em;
+	background: #EEE;
+}
+
+#controls_div {
+	float: left;
+	overflow:hidden;
+	margin:1em;
+}
+
+canvas {
+	float:left;
+}

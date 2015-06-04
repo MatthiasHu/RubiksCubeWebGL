@@ -3,6 +3,8 @@
 <meta charset="utf-8"/>
 <title>Rubik's Cube visualization</title>
 
+<link rel="stylesheet" href="style.css" type="text/css"></link>
+
 <script type="text/javascript" src="gl-matrix-min.js"></script>
 <script type="text/javascript" src="main.js"></script>
 <script type="text/javascript" src="rendering.js"></script>
@@ -35,8 +37,12 @@
 <body onload="onLoad();">
 <canvas id="webgl canvas" width=512 height=512 style="border: 1px solid black;">
 </canvas>
-<div id="controls div" style="overflow:hidden;">
-<br/>Controls:<br/><br/>
+
+<div id="controls_div" style="">
+Controls
+
+<br/>
+<div class="controls_section_div"> <!-- cube rotation controls -->
 rotating the cube:<br/>
 <table border="0">
 <tr>
@@ -51,7 +57,11 @@ rotating the cube:<br/>
 </tr>
 </table>
 Or use arrow keys!<br/>
-<br/>rotating planes:<br/>
+</div> <!-- cube rotation controls -->
+
+<br/>
+<div class="controls_section_div"> <!-- plane rotation controls -->
+rotating planes:<br/>
 <div style="float:left;">
 <table>
 <tr>
@@ -76,7 +86,7 @@ Or use arrow keys!<br/>
 </tr>
 </table>
 </div>
-<div style="float:left; margin-left:1cm;">
+<div style="float:left; margin-left:2em;">
 Or use keys:<br/>
 <table>
 <tr><td/><td>W</td><td>E</td><td/></tr>
@@ -84,7 +94,17 @@ Or use keys:<br/>
 <tr><td/><td>S</td><td>D</td><td/></tr>
 <tr><td>Z/Y</td><td/><td/><td>V</td></tr>
 <tr><td/><td>X</td><td>C</td><td/></tr>
+</table>
 </div>
-</div>
+</div> <!-- plane rotation controls -->
+
+<br/>
+<div class="controls_section_div"> <!-- inverted perspective controls -->
+inverted perspective mode:<br/>
+<input type="button" value="toggle" onClick="onToggleInvertedPerspective();"/><br/>
+Or press P.
+</div> <!-- inverted perspective controls -->
+
+</div> <!-- controls div -->
 </body>
 </html>
